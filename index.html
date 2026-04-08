@@ -216,6 +216,21 @@
     text-transform: uppercase;
   }
 
+  .btn-perchi {
+    display: inline-block;
+    padding: 0.5rem 0;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  .btn-perchi:hover { color: var(--accent); }
+
   /* ─── QUESTIONS SCREEN ─── */
   #questions {
     display: none;
@@ -483,9 +498,31 @@
 
     <div class="cta-area">
       <button class="btn-start" onclick="startJourney()">Cominciamo</button>
+      <button class="btn-perchi" onclick="showPerChi()">Per chi è questo posto →</button>
       <span class="no-diagnosis">Anonimo · Non clinico · Non vincolante</span>
     </div>
 
+  </div>
+</section>
+
+
+<!-- ══════════ PER CHI ══════════ -->
+<section id="perchi" style="display:none; min-height:100vh; padding:5rem 2rem; align-items:center; justify-content:center; flex-direction:column;">
+  <div style="max-width:600px; margin:0 auto;">
+    <p class="tag" style="opacity:1;animation:none;display:block;margin-bottom:2.5rem;">Per chi è questo posto</p>
+
+    <div style="font-size:clamp(1.05rem,2.2vw,1.2rem); line-height:2; color:rgba(232,228,220,0.82); opacity:0; animation:fadeUp 1s ease forwards 0.2s;">
+      <p style="margin-bottom:1.8rem;">Per chi è solo — non sempre, non per forza, ma spesso in un modo che gli altri non vedono.</p>
+      <p style="margin-bottom:1.8rem;">Per chi è intelligente e preparato. Anche alle batoste. Ai no della vita, delle persone, degli sguardi confusi dei parenti che non capiscono, delle parole che escono storte rispetto a quello che c'era dentro.</p>
+      <p style="margin-bottom:1.8rem;">Per chi sa di essere speciale — e lo apprezza. E alcune volte, nei momenti più stanchi, preferirebbe solo essere un po' meno complicato. Un po' meno sofisticato. <em style="color:var(--accent);">Fragile e potente in modo silenzioso.</em></p>
+      <p style="margin-bottom:3rem;">Per chi, quando parla con qualcuno che considera poco intelligente, lo tratta comunque come vorrebbe essere trattato dagli altri.</p>
+    </div>
+
+    <div style="border-top:1px solid var(--line); padding-top:2rem; margin-top:1rem; opacity:0; animation:fadeUp 1s ease forwards 0.7s;">
+      <p style="font-size:1.05rem; line-height:1.9; color:rgba(232,228,220,0.65); margin-bottom:2.5rem; font-style:italic;">Questo posto non spiega chi sei. Non ti mette un'etichetta. Ti offre solo uno specchio — un po' più nitido di quello che hai usato finora.</p>
+      <button class="btn-start" onclick="hidePerChi()" style="margin-right:1rem;">Cominciamo</button>
+      <button class="btn-perchi" onclick="hidePerChi()">← Torna</button>
+    </div>
   </div>
 </section>
 
@@ -667,6 +704,19 @@
     document.getElementById('questions').style.display = 'none';
     const closing = document.getElementById('closing');
     closing.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showPerChi() {
+    document.getElementById('intro').style.display = 'none';
+    const pc = document.getElementById('perchi');
+    pc.style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function hidePerChi() {
+    document.getElementById('perchi').style.display = 'none';
+    document.getElementById('intro').style.display = 'flex';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
