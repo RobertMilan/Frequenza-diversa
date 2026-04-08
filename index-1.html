@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frequenza Diversa</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #13131a;
+    --text: #e8e4dc;
+    --text-dim: #7a7570;
+    --accent: #c4a882;
+    --accent-soft: rgba(196, 168, 130, 0.12);
+    --accent-glow: rgba(196, 168, 130, 0.06);
+    --line: rgba(196, 168, 130, 0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.4;
+  }
+
+  /* ─── INTRO SCREEN ─── */
+  #intro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .bg-circle-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(196,168,130,0.05) 0%, transparent 70%);
+    top: -100px; left: -100px;
+    animation: drift1 18s ease-in-out infinite;
+  }
+  .bg-circle-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(100,120,180,0.04) 0%, transparent 70%);
+    bottom: -50px; right: -50px;
+    animation: drift2 22s ease-in-out infinite;
+  }
+
+  @keyframes drift1 {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(40px, 30px); }
+  }
+  @keyframes drift2 {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(-30px, -20px); }
+  }
+
+  .intro-content {
+    max-width: 640px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .signal-icon {
+    margin: 0 auto 3rem;
+    width: 48px;
+    height: 48px;
+    position: relative;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 0.3s;
+  }
+
+  .signal-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .signal-ring {
+    animation: pulse-ring 2.5s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .signal-ring:nth-child(2) { animation-delay: 0.4s; }
+  .signal-ring:nth-child(3) { animation-delay: 0.8s; }
+
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.7; }
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 0.5s;
+  }
+
+  h1 {
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 0.7s;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .opening-quote {
+    font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+    line-height: 1.75;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-bottom: 3.5rem;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 0.9s;
+    border-left: 1px solid var(--line);
+    padding-left: 1.5rem;
+    text-align: left;
+  }
+
+  .opening-quote strong {
+    color: var(--text);
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  .intro-body {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    line-height: 1.85;
+    color: rgba(232, 228, 220, 0.75);
+    margin-bottom: 3rem;
+    text-align: left;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 1.1s;
+  }
+
+  .cta-area {
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 1.4s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .btn-start {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-start::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent-soft);
+    transform: translateX(-100%);
+    transition: transform 0.4s ease;
+  }
+
+  .btn-start:hover::before { transform: translateX(0); }
+  .btn-start:hover { color: var(--text); }
+
+  .no-diagnosis {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ─── QUESTIONS SCREEN ─── */
+  #questions {
+    display: none;
+    min-height: 100vh;
+    padding: 5rem 2rem;
+    position: relative;
+  }
+
+  #questions.active { display: block; }
+
+  .questions-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 1px;
+    background: var(--line);
+    margin-bottom: 4rem;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.6s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+  }
+
+  .question-card {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .question-card.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .q-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .q-situation {
+    font-size: clamp(1.3rem, 3vw, 1.7rem);
+    line-height: 1.6;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  .q-detail {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: rgba(232, 228, 220, 0.65);
+    margin-bottom: 3rem;
+  }
+
+  .scale-wrap {
+    margin-bottom: 4rem;
+  }
+
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+
+  .scale-dots {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .scale-dot {
+    flex: 1;
+    aspect-ratio: 1;
+    max-width: 44px;
+    max-height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+
+  .scale-dot:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .scale-dot.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .btn-next {
+    display: inline-block;
+    padding: 0.85rem 2rem;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .btn-next.enabled {
+    opacity: 1;
+    pointer-events: all;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-next.enabled:hover {
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+
+  /* ─── CLOSING SCREEN ─── */
+  #closing {
+    display: none;
+    min-height: 100vh;
+    padding: 5rem 2rem;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  #closing.active {
+    display: flex;
+  }
+
+  .closing-wrap {
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .closing-wrap .tag { opacity: 1; animation: none; margin-bottom: 2.5rem; display: block; }
+
+  .closing-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    line-height: 1.3;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 0.2s;
+  }
+
+  .closing-title em { font-style: italic; color: var(--accent); }
+
+  .closing-body {
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: rgba(232, 228, 220, 0.72);
+    margin-bottom: 3rem;
+    text-align: left;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 0.5s;
+  }
+
+  .closing-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 0.8s;
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+    margin-top: 2rem;
+  }
+
+  /* ─── UTILITIES ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--line);
+    margin: 2rem auto;
+  }
+
+  @media (max-width: 480px) {
+    .scale-dot { font-size: 0.55rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ INTRO ══════════ -->
+<section id="intro">
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <div class="intro-content">
+
+    <div class="signal-icon">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle class="signal-ring" cx="24" cy="24" r="6" stroke="#c4a882" stroke-width="1"/>
+        <circle class="signal-ring" cx="24" cy="24" r="13" stroke="#c4a882" stroke-width="0.8"/>
+        <circle class="signal-ring" cx="24" cy="24" r="20" stroke="#c4a882" stroke-width="0.5"/>
+        <circle cx="24" cy="24" r="2.5" fill="#c4a882"/>
+      </svg>
+    </div>
+
+    <p class="tag">Frequenza Diversa</p>
+
+    <h1>Capivi tutto.<br>Ti perdevi <em>nell'alfabeto.</em></h1>
+
+    <blockquote class="opening-quote">
+      Sapevi molte cose. Le sentivi chiaramente dentro.<br>
+      Ma quando provavi a dirle, <strong>qualcosa si perdeva nel mezzo.</strong><br>
+      E alla fine hai pensato che il problema fossi tu.
+    </blockquote>
+
+    <p class="intro-body">
+      Questo non è un test. Non è una diagnosi. Non ti dirà chi sei.<br><br>
+      È una serie di situazioni. Le leggi. E senti — solo senti — quanto ti appartengono.<br><br>
+      Nessun punteggio. Nessuna etichetta. Solo uno specchio, un po' più nitido di quello che hai usato finora.
+    </p>
+
+    <div class="cta-area">
+      <button class="btn-start" onclick="startJourney()">Cominciamo</button>
+      <span class="no-diagnosis">Anonimo · Non clinico · Non vincolante</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ QUESTIONS ══════════ -->
+<section id="questions">
+  <div class="questions-wrap">
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-label" id="progressLabel">Situazione 1 di 6</p>
+
+    <!-- Q1 -->
+    <div class="question-card active" data-q="1">
+      <p class="q-number">Situazione 01</p>
+      <p class="q-situation">"Eri il tipo di bambino che tutti credevano di conoscere — e invece nessuno conosceva davvero."</p>
+      <p class="q-detail">Ti leggevano in faccia ogni emozione. Eri trasparente, aperto, forse ingenuo agli occhi degli altri. Ma nel frattempo tu, in silenzio, li studiavi tutti. Sapevi già chi era cattivo, chi era triste, chi faceva il bullo per paura. Lo sapevi prima ancora di avere le parole per dirlo.</p>
+      <div class="scale-wrap">
+        <div class="scale-labels"><span>Per niente</span><span>Completamente</span></div>
+        <div class="scale-dots" id="scale-1"></div>
+      </div>
+      <button class="btn-next" id="next-1" onclick="nextQuestion(1)">Situazione successiva →</button>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card" data-q="2">
+      <p class="q-number">Situazione 02</p>
+      <p class="q-situation">"Mentire ti costava qualcosa. Non solo moralmente — fisicamente."</p>
+      <p class="q-detail">Ci hai provato, a dire le bugie che tutti sembravano dire senza fatica. Ma dopo ti sentivi un impostore. Come se avessi tradito qualcosa di essenziale dentro di te. Non era questione di educazione ricevuta. Era qualcosa di più profondo — la menzogna ti disconnetteva da te stesso.</p>
+      <div class="scale-wrap">
+        <div class="scale-labels"><span>Per niente</span><span>Completamente</span></div>
+        <div class="scale-dots" id="scale-2"></div>
+      </div>
+      <button class="btn-next" id="next-2" onclick="nextQuestion(2)">Situazione successiva →</button>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card" data-q="3">
+      <p class="q-number">Situazione 03</p>
+      <p class="q-situation">"Imparavi le cose solo quando le capivi — non quando te le spiegavano."</p>
+      <p class="q-detail">Alcune poesie le memorizzavi in pochi minuti. Altre richiedevano settimane — finché non trovavi il filo che le collegava a qualcosa di vivo dentro di te. Non era pigrizia. Era che il tuo cervello archivia significati, non dati. Se una cosa non aveva senso per te, semplicemente scivolava via.</p>
+      <div class="scale-wrap">
+        <div class="scale-labels"><span>Per niente</span><span>Completamente</span></div>
+        <div class="scale-dots" id="scale-3"></div>
+      </div>
+      <button class="btn-next" id="next-3" onclick="nextQuestion(3)">Situazione successiva →</button>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card" data-q="4">
+      <p class="q-number">Situazione 04</p>
+      <p class="q-situation">"Hai sempre avuto la sensazione di funzionare al massimo — ma solo in certi momenti, su certi temi."</p>
+      <p class="q-detail">Come se dentro di te ci fosse un motore potente, ma con un interruttore strano. A volte si accendeva tutto insieme e riuscivi a vedere connessioni che gli altri non vedevano. Altre volte anche le cose più semplici sembravano inaccessibili. E non capivi perché. E non riuscivi a spiegarlo a nessuno.</p>
+      <div class="scale-wrap">
+        <div class="scale-labels"><span>Per niente</span><span>Completamente</span></div>
+        <div class="scale-dots" id="scale-4"></div>
+      </div>
+      <button class="btn-next" id="next-4" onclick="nextQuestion(4)">Situazione successiva →</button>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-card" data-q="5">
+      <p class="q-number">Situazione 05</p>
+      <p class="q-situation">"Ti sei sempre sentito speciale. E allo stesso tempo, sempre fuori posto."</p>
+      <p class="q-detail">Non arroganza — qualcosa di più sottile. Una certezza interiore di avere qualcosa da dare, di vedere le cose in modo diverso. E insieme, la fatica costante di integrarti, di capire le regole non scritte degli altri, di non spiegare ogni volta perché funzioni così. Il freno a mano tirato su un motore che vuole andare.</p>
+      <div class="scale-wrap">
+        <div class="scale-labels"><span>Per niente</span><span>Completamente</span></div>
+        <div class="scale-dots" id="scale-5"></div>
+      </div>
+      <button class="btn-next" id="next-5" onclick="nextQuestion(5)">Situazione successiva →</button>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-card" data-q="6">
+      <p class="q-number">Situazione 06</p>
+      <p class="q-situation">"Hai sempre pensato che il problema fossi tu. Forse non lo è mai stato."</p>
+      <p class="q-detail">Gli anni passano e quella sensazione di disallineamento non scompare. Impari a mascherarla, a compensare, a recitare la parte. Ma dentro continui a sentirti su una frequenza che il mondo non riesce a captare. E ti chiedi: e se non fosse un difetto? E se fosse semplicemente un altro modo di essere sintonizzati?</p>
+      <div class="scale-wrap">
+        <div class="scale-labels"><span>Per niente</span><span>Completamente</span></div>
+        <div class="scale-dots" id="scale-6"></div>
+      </div>
+      <button class="btn-next" id="next-6" onclick="showClosing()">Continua →</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ CLOSING ══════════ -->
+<section id="closing">
+  <div class="closing-wrap">
+    <span class="tag">Frequenza Diversa</span>
+
+    <h2 class="closing-title">Non sei rotto.<br>Sei <em>disallineato.</em></h2>
+
+    <p class="closing-body">
+      Quello che hai sentito leggendo queste situazioni — il riconoscimento, il sollievo, forse anche un po' di dolore — è informazione preziosa.<br><br>
+      Non significa che hai una diagnosi. Significa che ha senso approfondire. Con un medico, con uno specialista, o anche solo con te stesso.<br><br>
+      Esistono strumenti validati — come il DIVA-5 — che aiutano a raccogliere questi pattern in modo strutturato, prima di un eventuale percorso clinico. Non sono diagnosi. Sono specchi più precisi.<br><br>
+      E soprattutto: non sei l'unico a sentirsi così. Siete in molti, in silenzio, su questa frequenza.
+    </p>
+
+    <div class="closing-note">
+      Questo strumento non sostituisce una valutazione professionale<br>
+      e non raccoglie alcun dato personale.<br>
+      È nato da un'esperienza vissuta — non da un manuale.
+    </div>
+  </div>
+</section>
+
+<script>
+  const TOTAL = 6;
+  let answers = {};
+
+  function buildScales() {
+    for (let q = 1; q <= TOTAL; q++) {
+      const wrap = document.getElementById('scale-' + q);
+      if (!wrap) continue;
+      for (let v = 1; v <= 5; v++) {
+        const dot = document.createElement('button');
+        dot.className = 'scale-dot';
+        dot.textContent = v;
+        dot.setAttribute('aria-label', 'Valore ' + v);
+        dot.addEventListener('click', () => selectDot(q, v, dot, wrap));
+        wrap.appendChild(dot);
+      }
+    }
+  }
+
+  function selectDot(q, v, dot, wrap) {
+    wrap.querySelectorAll('.scale-dot').forEach(d => d.classList.remove('selected'));
+    dot.classList.add('selected');
+    answers[q] = v;
+    const btn = document.getElementById('next-' + q);
+    if (btn) btn.classList.add('enabled');
+  }
+
+  function startJourney() {
+    document.getElementById('intro').style.display = 'none';
+    const qs = document.getElementById('questions');
+    qs.classList.add('active');
+    updateProgress(1);
+    setTimeout(() => {
+      const first = qs.querySelector('.question-card.active');
+      if (first) { first.style.opacity = '1'; first.style.transform = 'translateY(0)'; }
+    }, 100);
+  }
+
+  function nextQuestion(current) {
+    const currentCard = document.querySelector('[data-q="' + current + '"]');
+    const nextCard = document.querySelector('[data-q="' + (current + 1) + '"]');
+    if (!nextCard) return;
+
+    currentCard.classList.remove('active');
+    currentCard.style.display = 'none';
+
+    nextCard.style.opacity = '0';
+    nextCard.style.transform = 'translateY(20px)';
+    nextCard.classList.add('active');
+
+    setTimeout(() => {
+      nextCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      nextCard.style.opacity = '1';
+      nextCard.style.transform = 'translateY(0)';
+    }, 50);
+
+    updateProgress(current + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress(current) {
+    const pct = ((current - 1) / TOTAL) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent =
+      'Situazione ' + current + ' di ' + TOTAL;
+  }
+
+  function showClosing() {
+    document.getElementById('questions').classList.remove('active');
+    document.getElementById('questions').style.display = 'none';
+    const closing = document.getElementById('closing');
+    closing.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  buildScales();
+
+  // ─── WEB AUDIO LO-FI PLAYER ───
+  let audioCtx = null;
+  let isPlaying = false;
+  let masterGain = null;
+  let allNodes = [];
+
+  const moods = [
+    { label: 'Chill', chord: [220, 277.18, 329.63], tempo: 0.48 },
+    { label: 'Drift', chord: [196, 246.94, 293.66], tempo: 0.44 },
+    { label: 'Dusk',  chord: [174.61, 220, 261.63], tempo: 0.52 },
+  ];
+  let currentMood = 0;
+
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    masterGain.connect(audioCtx.destination);
+  }
+
+  function makeLofi(mood) {
+    const ctx = audioCtx;
+    allNodes = [];
+
+    // Pink noise vinyl crackle
+    const bufSize = ctx.sampleRate * 2;
+    const noiseBuffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for (let i = 0; i < bufSize; i++) {
+      const w = Math.random()*2-1;
+      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+      data[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+    }
+    const crackle = ctx.createBufferSource();
+    crackle.buffer = noiseBuffer; crackle.loop = true;
+    const crackleG = ctx.createGain(); crackleG.gain.value = 0.015;
+    crackle.connect(crackleG); crackleG.connect(masterGain);
+    crackle.start(); allNodes.push(crackle);
+
+    // Warm pad chords
+    mood.chord.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.detune.value = (i-1)*5;
+      const filt = ctx.createBiquadFilter();
+      filt.type = 'lowpass'; filt.frequency.value = 750+i*100; filt.Q.value = 0.7;
+      const g = ctx.createGain(); g.gain.value = 0.055 + (i===1?0.02:0);
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.12+i*0.05;
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.01;
+      lfo.connect(lfoG); lfoG.connect(g.gain);
+      osc.connect(filt); filt.connect(g); g.connect(masterGain);
+      osc.start(); lfo.start();
+      allNodes.push(osc, lfo);
+    });
+
+    // Bass pulse
+    const bass = ctx.createOscillator();
+    bass.type = 'triangle'; bass.frequency.value = mood.chord[0]/2;
+    const bassG = ctx.createGain(); bassG.gain.value = 0;
+    const bassF = ctx.createBiquadFilter();
+    bassF.type = 'lowpass'; bassF.frequency.value = 160;
+    bass.connect(bassF); bassF.connect(bassG); bassG.connect(masterGain);
+    bass.start(); allNodes.push(bass);
+
+    function pulseBass() {
+      if (!isPlaying) return;
+      const t = ctx.currentTime;
+      bassG.gain.cancelScheduledValues(t);
+      bassG.gain.setValueAtTime(0,t);
+      bassG.gain.linearRampToValueAtTime(0.09, t+0.05);
+      bassG.gain.exponentialRampToValueAtTime(0.001, t+mood.tempo*0.85);
+      setTimeout(pulseBass, mood.tempo*1000);
+    }
+    pulseBass();
+
+    // Soft reverb
+    const revLen = ctx.sampleRate*2;
+    const revBuf = ctx.createBuffer(2,revLen,ctx.sampleRate);
+    for(let ch=0;ch<2;ch++){
+      const d=revBuf.getChannelData(ch);
+      for(let i=0;i<revLen;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/revLen,2.5);
+    }
+    const conv = ctx.createConvolver(); conv.buffer=revBuf;
+    const revG = ctx.createGain(); revG.gain.value=0.14;
+    masterGain.connect(conv); conv.connect(revG); revG.connect(ctx.destination);
+    allNodes.push(conv);
+  }
+
+  function stopLofi() {
+    allNodes.forEach(n => { try { n.stop(); } catch(e){} });
+    allNodes = [];
+  }
+
+  function togglePlay() {
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (isPlaying) {
+      masterGain.gain.setTargetAtTime(0.001, audioCtx.currentTime, 0.6);
+      setTimeout(stopLofi, 700);
+      isPlaying = false; setPlayState(false);
+    } else {
+      makeLofi(moods[currentMood]);
+      masterGain.gain.setTargetAtTime(0.85, audioCtx.currentTime, 1.2);
+      isPlaying = true; setPlayState(true);
+    }
+  }
+
+  function setPlayState(playing) {
+    document.getElementById('play-icon').style.display = playing ? 'none' : 'block';
+    document.getElementById('pause-icon').style.display = playing ? 'block' : 'none';
+    document.getElementById('player-label').textContent = playing ? moods[currentMood].label : 'Musica';
+    document.getElementById('player-dot').style.animationPlayState = playing ? 'running' : 'paused';
+  }
+
+  function cycleMood() {
+    currentMood = (currentMood+1) % moods.length;
+    if (isPlaying) {
+      masterGain.gain.setTargetAtTime(0.001, audioCtx.currentTime, 0.3);
+      setTimeout(() => {
+        stopLofi();
+        makeLofi(moods[currentMood]);
+        masterGain.gain.setTargetAtTime(0.85, audioCtx.currentTime, 0.8);
+        document.getElementById('player-label').textContent = moods[currentMood].label;
+      }, 400);
+    } else {
+      document.getElementById('player-label').textContent = moods[currentMood].label;
+    }
+  }
+</script>
+
+<div id="music-player" style="
+  position:fixed; bottom:1.5rem; right:1.5rem; z-index:200;
+  display:flex; align-items:center; gap:0.6rem;
+  background:rgba(13,13,15,0.88);
+  border:1px solid rgba(196,168,130,0.22);
+  border-radius:2rem;
+  padding:0.5rem 1rem 0.5rem 0.55rem;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  box-shadow:0 4px 28px rgba(0,0,0,0.45);
+  font-family:'DM Mono',monospace; font-size:0.6rem;
+  letter-spacing:0.15em; color:rgba(196,168,130,0.7);
+  user-select:none;
+">
+  <button onclick="togglePlay()" style="
+    width:30px; height:30px; border-radius:50%;
+    border:1px solid rgba(196,168,130,0.3);
+    background:rgba(196,168,130,0.08);
+    color:#c4a882; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:background 0.2s ease;
+  " onmouseover="this.style.background='rgba(196,168,130,0.2)'" onmouseout="this.style.background='rgba(196,168,130,0.08)'">
+    <svg id="play-icon" width="10" height="12" viewBox="0 0 10 12" fill="#c4a882" style="display:block;margin-left:2px;"><polygon points="0,0 10,6 0,12"/></svg>
+    <svg id="pause-icon" width="10" height="12" viewBox="0 0 10 12" fill="#c4a882" style="display:none;"><rect x="0" y="0" width="3.5" height="12" rx="1"/><rect x="6.5" y="0" width="3.5" height="12" rx="1"/></svg>
+  </button>
+
+  <span id="player-dot" style="
+    width:5px; height:5px; border-radius:50%;
+    background:#c4a882; flex-shrink:0; opacity:0.4;
+    animation:blink 1.4s ease-in-out infinite;
+    animation-play-state:paused;
+  "></span>
+
+  <span id="player-label" style="text-transform:uppercase;">Musica</span>
+
+  <button onclick="cycleMood()" title="Cambia atmosfera" style="
+    background:none; border:none;
+    color:rgba(196,168,130,0.4); cursor:pointer;
+    font-size:0.85rem; padding:0 0.1rem;
+    transition:color 0.2s;
+  " onmouseover="this.style.color='#c4a882'" onmouseout="this.style.color='rgba(196,168,130,0.4)'">⇄</button>
+</div>
+
+<style>
+@keyframes blink {
+  0%,100% { opacity:0.15; }
+  50% { opacity:0.9; }
+}
+</style>
+
+</body>
+</html>
